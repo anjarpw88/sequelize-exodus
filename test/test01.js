@@ -35,9 +35,6 @@ describe("Converter", () => {
       var sequenceExodus = new SequenceExodus();
       await sequenceExodus.login(local.dbConnection);
       var virtualStructure = await sequenceExodus.importFromDb();
-      console.log(JSON.stringify(virtualStructure.tables.UserAsBorrower_Detail, null,2));
-
-      //done();
+      await sequenceExodus.saveVirtualStructureFromImport("model1",virtualStructure);
   });
-
 });
