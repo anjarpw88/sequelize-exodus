@@ -1,0 +1,20 @@
+{
+  "name": "sequelize-exodus",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha --reporter list"
+  },
+  "author": "ANJAR PUJI WICAKSONO",
+  "license": "MIT",
+  "dependencies": {
+    "array-async-tools": "^1.0.1",
+    "chai": "^4.1.2",
+    "lodash": "^4.17.5",
+    "mocha": "^5.0.4",
+    "pg": "^7.4.1",
+    "pg-hstore": "^2.3.2",
+    "sequelize": "^4.35.2"
+  }
+}
