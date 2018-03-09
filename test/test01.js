@@ -37,9 +37,11 @@ describe("Converter", () => {
       await sequenceExodus.login(local.dbConnection);
       var versatileStructure = await sequenceExodus.importVersatileStructureFromDb();
       var compactStructure = ToolConverters.getCompactStructureFromVersatile(versatileStructure);
-      console.log(compactStructure);
-      await sequenceExodus.saveCompactStructureFromImport("./modelB",versatileStructure);
-      await sequenceExodus.saveCompactStructureFromImport("./modelA",versatileStructure);
-      await sequenceExodus.compareTwoCompactStructures("./modelB", "./modelA");
+      await sequenceExodus.saveCompactStructureFromImport("./modelC",compactStructure);
+  });
+  it("Compare", async () => {
+      var sequenceExodus = new SequenceExodus();
+      var comparison = await sequenceExodus.compareTwoCompactStructures("./model1", "./model2");
+      sequenceExodus.saveComparisonIntoMigrationFile(comparison, "./migration/mig01.js");
   });
 });
