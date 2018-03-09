@@ -2,6 +2,7 @@
 module.exports = function(Sequelize){
   return {
     tableName : "UserAsBorrower_Detail",
+    primaryKeys : ["DetailId"],
     columns : {
       "DetailId" : {
         type : Sequelize.BIGINT,

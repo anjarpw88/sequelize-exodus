@@ -2,6 +2,7 @@
 module.exports = function(Sequelize){
   return {
     tableName : "UserAsBorrower",
+    primaryKeys : ["fk_UserId","CardId"],
     columns : {
       "fk_UserId" : {
         type : Sequelize.INTEGER,
@@ -12,8 +13,8 @@ module.exports = function(Sequelize){
       },
       "firstName" : {
         type : Sequelize.STRING,
-        allowNull : true,
-        defaultValue : null,
+        allowNull : false,
+        defaultValue : "Sandnes",
         special : [],
         primaryKey : false
       },
@@ -93,6 +94,7 @@ module.exports = function(Sequelize){
       "cardId_fk" : "FOREIGN KEY",
       "pk" : "PRIMARY KEY",
       "2200_24743_1_not_null" : "CHECK",
+      "2200_24743_2_not_null" : "CHECK",
       "2200_24743_10_not_null" : "CHECK"
     }
   }

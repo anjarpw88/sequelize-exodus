@@ -2,6 +2,7 @@
 module.exports = function(Sequelize){
   return {
     tableName : "grouptag",
+    primaryKeys : ["id"],
     columns : {
       "id" : {
         type : Sequelize.INTEGER,
