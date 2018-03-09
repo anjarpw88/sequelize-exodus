@@ -42,6 +42,6 @@ describe("Converter", () => {
   it("Compare", async () => {
       var sequenceExodus = new SequenceExodus();
       var comparison = await sequenceExodus.compareTwoCompactStructures("./model1", "./model2");
-      sequenceExodus.saveComparisonIntoMigrationFile(comparison, "./migration/mig01.js");
+      sequenceExodus.saveComparisonIntoMigrationFile(comparison, "./mig01.js");
   });
 });

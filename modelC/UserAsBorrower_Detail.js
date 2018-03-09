@@ -2,29 +2,6 @@
 module.exports = {
   tableName : "UserAsBorrower_Detail",
   primaryKeys : ["DetailId"],
-  columns : {
-    "DetailId" : {
-      _getType : (Sequelize) => Sequelize.BIGINT,
-      allowNull : false,
-      defaultValue : "nextval(\"UserAsBorrower_Detail_DetailId_seq\"::regclass)",
-      special : [],
-      primaryKey : true
-    },
-    "CardId" : {
-      _getType : (Sequelize) => Sequelize.BIGINT,
-      allowNull : true,
-      defaultValue : null,
-      special : [],
-      primaryKey : false
-    },
-    "UserId" : {
-      _getType : (Sequelize) => Sequelize.BIGINT,
-      allowNull : true,
-      defaultValue : null,
-      special : [],
-      primaryKey : false
-    }
-  },
   foreignKeys : {
     "fk" : {
       fromTable : "UserAsBorrower_Detail",
@@ -38,4 +15,25 @@ module.exports = {
     "fk" : "FOREIGN KEY",
     "2200_24786_1_not_null" : "CHECK"
   }
+  columns : {
+    "DetailId" : {
+      _getType : (Sequelize) => Sequelize.BIGINT,
+      allowNull : false,
+      defaultValue : "nextval(\"UserAsBorrower_Detail_DetailId_seq\"::regclass)",
+      special : [],
+      primaryKey : true
+    },
+    "CardId" : {
+      _getType : (Sequelize) => Sequelize.BIGINT,
+      allowNull : true,
+      special : [],
+      primaryKey : false
+    },
+    "UserId" : {
+      _getType : (Sequelize) => Sequelize.BIGINT,
+      allowNull : true,
+      special : [],
+      primaryKey : false
+    }
+  },
 }
