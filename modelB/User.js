@@ -1,24 +1,31 @@
 
 module.exports = function(Sequelize){
   return {
-    tableName : "grouptag",
+    tableName : "User",
     columns : {
       "id" : {
         type : Sequelize.INTEGER,
         allowNull : false,
-        defaultValue : null,
+        defaultValue : "nextval(\"User_id_seq\"::regclass)",
         special : [],
         primaryKey : true
       },
-      "groupname" : {
-        type : Sequelize.TEXT,
+      "username" : {
+        type : Sequelize.STRING,
         allowNull : true,
         defaultValue : null,
         special : [],
         primaryKey : false
       },
-      "tags" : {
-        type : ,
+      "dateCreated" : {
+        type : Sequelize.DATE,
+        allowNull : true,
+        defaultValue : null,
+        special : [],
+        primaryKey : false
+      },
+      "hashedPassword" : {
+        type : Sequelize.STRING,
         allowNull : true,
         defaultValue : null,
         special : [],
@@ -28,8 +35,8 @@ module.exports = function(Sequelize){
     foreignKeys : {
     },
     constraints : {
-      "grouptag_pkey" : "PRIMARY KEY",
-      "2200_24812_1_not_null" : "CHECK"
+      "User_pkey" : "PRIMARY KEY",
+      "2200_24751_1_not_null" : "CHECK"
     }
   }
 }

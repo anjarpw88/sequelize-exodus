@@ -2,6 +2,8 @@ const chai = require("chai");
 const assert = chai.assert;
 const SequenceExodus = require("../lib/sequelize-exodus");
 const local = require("../env/local");
+const Sequelize = require('sequelize');
+const ToolConverters = require('../lib/tool-converters');
 
 describe("Converter", () => {
 
@@ -22,7 +24,6 @@ describe("Converter", () => {
         var item = SequenceExodus.convertToDataTypes({
           type:type
         });
-        //console.log(item);
       });
   });
 
@@ -34,7 +35,11 @@ describe("Converter", () => {
   it("Get Database", async () => {
       var sequenceExodus = new SequenceExodus();
       await sequenceExodus.login(local.dbConnection);
-      var virtualStructure = await sequenceExodus.importFromDb();
-      await sequenceExodus.saveVirtualStructureFromImport("model1",virtualStructure);
+      var versatileStructure = await sequenceExodus.importVersatileStructureFromDb();
+      var compactStructure = ToolConverters.getCompactStructureFromVersatile(versatileStructure);
+      console.log(compactStructure);
+      await sequenceExodus.saveCompactStructureFromImport("./modelB",versatileStructure);
+      await sequenceExodus.saveCompactStructureFromImport("./modelA",versatileStructure);
+      await sequenceExodus.compareTwoCompactStructures("./modelB", "./modelA");
   });
 });
