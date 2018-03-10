@@ -1,6 +1,6 @@
 module.exports = {
   dbConnection:{
-    schema:"localdb",
+    database:"localdb",
     username:"master",
     password:"pass",
     dialect: "postgres",
