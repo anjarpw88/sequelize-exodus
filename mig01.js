@@ -4,7 +4,7 @@ module.exports = {
   fromVersion : "0.0" ,
   migrationName : "test" ,
   up : function(QueryAction){
-    QueryAction.removePrimaryKeys("User");
+    QueryAction.removePrimaryKeys("User","User_pkey");
     QueryAction.removeForeignKey("UserAsBorrower","cardId_fk");
     QueryAction.removeForeignKey("UserAsBorrower","UserAsBorrower_User_id_fkey");
     QueryAction.removeTable("Card");
@@ -29,7 +29,7 @@ module.exports = {
       special : [],
       primaryKey : true
     });
-    QueryAction.addPrimaryKeys("User",["uid"]);
+    QueryAction.addPrimaryKeys("User","User(uid)_PK", ["uid"]);
     QueryAction.modifyColumns("grouptag","tags",{
       allowNull : true
     });
@@ -45,7 +45,7 @@ module.exports = {
     QueryAction.modifyColumns("grouptag","tags",{
       allowNull : false
     });
-    QueryAction.removePrimaryKeys("User");
+    QueryAction.removePrimaryKeys("User","User(uid)_PK");
     QueryAction.removeColumn("User", "uid");
     QueryAction.removeTable("Card2");
     QueryAction.addColumns("User","id",{
@@ -86,6 +86,6 @@ module.exports = {
       fromColumns : ["CardId"],
       toColumns : ["id"]
     });
-    QueryAction.addPrimaryKeys("User",["id"]);
+    QueryAction.addPrimaryKeys("User","User_pkey", ["id"]);
   },
 }
