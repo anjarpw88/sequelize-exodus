@@ -3,13 +3,13 @@ module.exports = {
   currentVersion : "1.0" ,
   fromVersion : "0.0" ,
   migrationName : "test" ,
-  up : function(QueryAction){
-    QueryAction.removePrimaryKeys("User","User_pkey");
-    QueryAction.removeForeignKey("UserAsBorrower","cardId_fk");
-    QueryAction.removeForeignKey("UserAsBorrower","UserAsBorrower_User_id_fkey");
-    QueryAction.removeTable("Card");
-    QueryAction.removeColumn("User", "id");
-    QueryAction.addTable({
+  up : async function(QueryAction){
+    await QueryAction.removePrimaryKeys("User","User_pkey");
+    await QueryAction.removeForeignKey("UserAsBorrower","cardId_fk");
+    await QueryAction.removeForeignKey("UserAsBorrower","UserAsBorrower_User_id_fkey");
+    await QueryAction.removeTable("Card");
+    await QueryAction.removeColumn("User", "id");
+    await QueryAction.addTable({
       tableName : "Card2",
       primaryKeys : ["id"],
       columns : {
@@ -22,40 +22,40 @@ module.exports = {
         }
       },
     });
-    QueryAction.addColumns("User","uid",{
+    await QueryAction.addColumns("User","uid",{
       _getType : (Sequelize) => Sequelize.INTEGER,
       allowNull : false,
       defaultValue : "nextval(\"User_id_seq\"::regclass)",
       special : [],
       primaryKey : true
     });
-    QueryAction.addPrimaryKeys("User","User(uid)_PK", ["uid"]);
-    QueryAction.modifyColumns("grouptag","tags",{
+    await QueryAction.addPrimaryKeys("User","User(uid)_PK", ["uid"]);
+    await QueryAction.modifyColumns("grouptag","tags",{
       allowNull : true
     });
-    QueryAction.addColumns("grouptag","groupname",{
+    await QueryAction.addColumns("grouptag","groupname",{
       _getType : (Sequelize) => Sequelize.TEXT,
       allowNull : true,
       special : [],
       primaryKey : false
     });
   },
-  down : function(QueryAction){
-    QueryAction.removeColumn("grouptag", "groupname");
-    QueryAction.modifyColumns("grouptag","tags",{
+  down : async function(QueryAction){
+    await QueryAction.removeColumn("grouptag", "groupname");
+    await QueryAction.modifyColumns("grouptag","tags",{
       allowNull : false
     });
-    QueryAction.removePrimaryKeys("User","User(uid)_PK");
-    QueryAction.removeColumn("User", "uid");
-    QueryAction.removeTable("Card2");
-    QueryAction.addColumns("User","id",{
+    await QueryAction.removePrimaryKeys("User","User(uid)_PK");
+    await QueryAction.removeColumn("User", "uid");
+    await QueryAction.removeTable("Card2");
+    await QueryAction.addColumns("User","id",{
       _getType : (Sequelize) => Sequelize.INTEGER,
       allowNull : false,
       defaultValue : "nextval(\"User_id_seq\"::regclass)",
       special : [],
       primaryKey : true
     });
-    QueryAction.addTable({
+    await QueryAction.addTable({
       tableName : "Card",
       primaryKeys : ["id"],
       foreignKeys : {
@@ -74,18 +74,18 @@ module.exports = {
         }
       },
     });
-    QueryAction.addForeignKey("UserAsBorrower","UserAsBorrower_User_id_fkey",{
+    await QueryAction.addForeignKey("UserAsBorrower","UserAsBorrower_User_id_fkey",{
       fromTable : "UserAsBorrower",
       toTable : "User",
       fromColumns : ["fk_UserId"],
       toColumns : ["id"]
     });
-    QueryAction.addForeignKey("UserAsBorrower","cardId_fk",{
+    await QueryAction.addForeignKey("UserAsBorrower","cardId_fk",{
       fromTable : "UserAsBorrower",
       toTable : "Card",
       fromColumns : ["CardId"],
       toColumns : ["id"]
     });
-    QueryAction.addPrimaryKeys("User","User_pkey", ["id"]);
+    await QueryAction.addPrimaryKeys("User","User_pkey", ["id"]);
   },
 }
