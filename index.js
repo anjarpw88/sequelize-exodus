@@ -82,7 +82,21 @@ const waitOptionPrompt = async function(options){
   print(consoleOpt.Reset);
   return options[key];
 }
-const doLoginDb = async function(){
+
+const doLoginDb = async function(obj){
+  var login = await sequelizeExodus.login(obj);
+  console.log("logged in to database\r\n");
+  mainOptions.importDb.todo = importDb;
+  mainOptions.compareDb.todo = compareDb;
+  mainOptions.migrateDb.todo = migrateDb;
+  mainOptions.importDb.status = "";
+  mainOptions.compareDb.status = "";
+  mainOptions.migrateDb.status = "";
+  delete mainOptions.loginDb;
+
+}
+
+const loginDb = async function(){
   var isTrying  = true;
   while(isTrying){
     var dialectOptions = ["mysql","postgres","mssql"];
@@ -94,7 +108,7 @@ const doLoginDb = async function(){
     var username = await waitPrompt("Enter UserName");
     var password = await waitPass("Enter Password","*");
     try{
-      var login = await sequelizeExodus.login({
+      await doLoginDb({
         database,
         username,
         password,
@@ -103,14 +117,6 @@ const doLoginDb = async function(){
         port
       });
       isTrying=false;
-      console.log("logged in to database\r\n");
-      mainOptions.importDb.todo = doImportDb;
-      mainOptions.compareDb.todo = doCompareDb;
-      mainOptions.migrateDb.todo = doMigrateDb;
-      mainOptions.importDb.status = "";
-      mainOptions.compareDb.status = "";
-      mainOptions.migrateDb.status = "";
-
     }catch(e){
       print("Unable to login to database");
       var isTrying = await waitConfirm("Retry (Y/N)?");
@@ -119,29 +125,40 @@ const doLoginDb = async function(){
   chooseAction(mainOptions);
 }
 
-const doImportDb = async ()=>{
-  var compactStructure = await sequelizeExodus.importCompactStructureFromDb();
+
+const doImportDb = async (outputDir) => {
   try{
-    var directory = await waitPrompt("In which folder do you want to store it?");
-    await sequelizeExodus.saveCompactStructureFromImport(directory,compactStructure);
-    console.log("data stored successfully");
+    var compactStructure = await sequelizeExodus.importCompactStructureFromDb();
+    await sequelizeExodus.saveCompactStructureFromImport(outputDir,compactStructure);
+    console.log("data stored successfully", outputDir);
   }catch(e){
     console.log(e);
   }
-  chooseAction(mainOptions);
 }
-const doCompareDb = async ()=>{
-  var compactStructure = await sequelizeExodus.importCompactStructureFromDb();
-  var newDir = await waitPrompt("In which directory is the new version?");
+const importDb = async ()=>{
+  var outputDir = await waitPrompt("In which folder do you want to store it?");
+  await doImportDb(outputDir);
+}
+
+const doCompareDb = async (referredDir, outputPath, migrationInfo) => {
+  var comparison = await sequelizeExodus.compareCompactStructureWithDb(referredDir);
+  await sequelizeExodus.saveComparisonIntoMigrationFile(comparison, migrationInfo, outputPath);
+}
+
+const compareDb = async ()=>{
+  var referredDir = await waitPrompt("In which directory is the new version?");
+  var outputPath = await waitPrompt("In which path do you want to store the migration script?");
   var migrationInfo = await getMigrationInfo();
-  var comparison = await sequelizeExodus.compareCompactStructureWithDb(compactStructure);
-  var path = await waitPrompt("In which path do you want to store the migration script?");
-  await sequelizeExodus.saveComparisonIntoMigrationFile(comparison, migrationInfo, path);
-  chooseAction(mainOptions);
+  await doCompareDb(referredDir, outputPath, migrationInfo);
 }
-const doMigrateDb = async ()=>{
-  var path = await waitPrompt("Where is the path to the migration script?");
+
+const doMigrateDb = async (path)=>{
   await sequelizeExodus.migrateWithMigrationFiles(path);
+}
+
+const migrateDb = async ()=>{
+  var path = await waitPrompt("Where is the path to the migration script?");
+  await doMigrateDb(path);
   chooseAction(mainOptions);
 }
 const getMigrationInfo = async ()=>{
@@ -155,32 +172,35 @@ const getMigrationInfo = async ()=>{
   };
 }
 
+const doCompareLocal = async function(newDir, oldDir, outputPath, migrationInfo){
+  var comparison = await sequelizeExodus.compareTwoCompactStructures(newDir, oldDir);
+  await sequelizeExodus.saveComparisonIntoMigrationFile(comparison, migrationInfo, outputPath);
+}
 
-const doCompareLocal = async ()=>{
+const compareLocal = async ()=>{
   var sequelizeExodus = new SequelizeExodus();
   var newDir = await waitPrompt("In which directory is the new version?");
   var oldDir = await waitPrompt("In which directory is the old version?");
-  var comparison = await sequelizeExodus.compareTwoCompactStructures(newDir, oldDir);
-  var migrationInfo = await getMigrationInfo();
   var path = await waitPrompt("In which path do you want to store the migration script?");
-  await sequelizeExodus.saveComparisonIntoMigrationFile(comparison, migrationInfo, path);
-
+  var migrationInfo = await getMigrationInfo();
+  await doCompareLocal(newDir, oldDir, outputPath, migrationInfo);
   chooseAction(mainOptions);
 }
 
 var needLogin = ()=>{
   print(consoleOpt.FgRed+"You are required to login before accessing this menu"+consoleOpt.Reset);
-  doLoginDb();
+  loginDb();
 }
+
 
 var mainOptions = {
     loginDb:{
-      todo:doLoginDb,
+      todo:loginDb,
       description:"LOGIN DB, to database and unlock menus",
       status: consoleOpt.Bright + consoleOpt.FgGreen
     },
     compareLocal:{
-      todo: doCompareLocal,
+      todo: compareLocal,
       description:"COMPARE LOCAL: between two local model-scripts and generate migration script",
     },
     importDb:{
@@ -210,7 +230,122 @@ async function chooseAction(options){
   return item.todo();
 }
 
-chooseAction(mainOptions)
-.catch((e)=>{
-  console.log(e);
-})
+
+function addLoginOptions(cmd){
+  return cmd
+  .option('-u, --username <username>', 'username')
+  .option('-x, --password <password>', 'password')
+  .option('-d, --database <database>', 'database')
+  .option('-h, --host <host>', 'host')
+  .option('-p, --port <port>', 'port')
+  .option('-t, --dialect <dialect>', 'dialect');
+}
+
+const addMigrationSettingOptions = function(cmd){
+  return cmd
+  .option('-o, --output-path <outputPath>', 'output path')
+  .option('--from-version <fromVersion>', 'from version of structure in the databse')
+  .option('--current-version <currentVersion>', 'new version of structure in the directory')
+  .option('--migration-name <migrationName>', 'name of this migration');
+
+}
+
+
+function extractDbConn(env){
+  return {
+    username:env.username,
+    host:env.host,
+    port:env.port,
+    password:env.password,
+    database:env.database,
+    dialect: env.dialect
+  };
+}
+
+addLoginOptions(program.command('import'))
+.option('-o, --output-dir <outputDir>', 'output directory')
+.action(async function(env){
+  try{
+    var conn = extractDbConn(env);
+    await doLoginDb(conn);
+    await doImportDb(env.outputDir);
+  }catch(e){
+    console.log(e);
+  }
+  process.exit();
+});
+
+addLoginOptions(program.command('migrate'))
+.option('--path <path>', 'migration path')
+.action(async function(env){
+  try{
+    var conn = extractDbConn(env);
+    await doLoginDb(conn);
+    await doMigrateDb(env.path);
+  }catch(e){
+    console.log(e);
+  }
+  process.exit();
+});
+
+addMigrationSettingOptions(
+  addLoginOptions(program.command('compare-db'))
+)
+.option('--ref-dir <referredDir>', 'referred directory')
+.action(async function(env){
+  try{
+    var conn = extractDbConn(env);
+    await doLoginDb(conn);
+    await doCompareDb(env.refDir, env.outputPath, {
+      fromVersion: env.fromVersion,
+      currentVersion:env.currentVersion,
+      migrationName:env.migrationName
+    });
+  }catch(e){
+    console.log(e);
+  }
+  process.exit();
+});
+addMigrationSettingOptions(program.command('compare-local'))
+.option('--old-dir <oldDir>', 'directory of old structure')
+.option('--new-dir <newDir>', 'directory of new structure')
+.action(async function(env){
+  try{
+    await doCompareLocal(env.newDir, env.oldDir,  env.outputPath, {
+      fromVersion: env.fromVersion,
+      currentVersion:env.currentVersion,
+      migrationName:env.migrationName
+    });
+  }catch(e){
+    console.log(e);
+  }
+  process.exit();
+});
+
+
+addLoginOptions(program.command('login'))
+  .action(async function(env){
+    try{
+      var conn = extractDbConn(env);
+      await doLoginDb(conn);
+      await chooseAction(mainOptions)
+      .catch((e)=>{
+        console.log(e);
+      });
+    }catch(e){
+      console.log(e);
+    }
+    process.exit();
+  });
+
+
+program
+  .command("interactive", "interactive menu")
+  .action(async function(){
+    await chooseAction(mainOptions)
+    .catch((e)=>{
+      console.log(e);
+    });
+  });
+
+program.parse(process.argv);
