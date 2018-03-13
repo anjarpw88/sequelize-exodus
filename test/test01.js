@@ -41,16 +41,12 @@ describe("Converter", () => {
   it("Compare", async () => {
       var sequelizeExodus = new SequelizeExodus();
       var comparison = await sequelizeExodus.compareTwoCompactStructures("./model1", "./model2");
-      await sequelizeExodus.saveComparisonIntoMigrationFile(comparison, {
-        currentVersion:"1.0",
-        fromVersion:"0.0",
-        migrationName:"test"
-      }, "./migrations/mig01.js");
+      await sequelizeExodus.saveComparisonIntoMigrationFile(comparison, "test", "./migrations/mig01.js");
 
   });
   it("Run Migration", async () => {
     var sequelizeExodus = new SequelizeExodus();
     await sequelizeExodus.login(local.dbConnection);
-    sequelizeExodus.migrateWithMigrationFiles("./migrations/mig010.js");
+    await sequelizeExodus.migrateWithMigrationFiles("./migrations/mig010.js");
   });
 });
