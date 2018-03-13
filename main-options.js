@@ -9,9 +9,12 @@ let {
   waitOptionPrompt
 } = require("./extended-prompt");
 const Actions = require('./actions');
-
+const path = require('path');
 const FileRW = require('./lib/file-rw');
 
+function relativePath(str){
+  return path.join(process.cwd(),str);
+}
 var needLogin = ()=>{
   print(consoleOpt.FgRed+"You are required to login before accessing this menu"+consoleOpt.Reset);
   loginDb();
@@ -48,6 +51,8 @@ const loginDb = async function(){
   }
   await chooseMainAction();
 }
+
+
 const importDb = async ()=>{
   var outputDir = await waitPrompt("In which folder do you want to store it?", (val) => {
     if(FileRW.isValidDirectory(val)){
@@ -56,7 +61,7 @@ const importDb = async ()=>{
       return false;
     }
     return true;
-  });
+  },relativePath);
   await Actions.doImportDb(outputDir);
   await chooseMainAction();
 }
@@ -68,7 +73,7 @@ const compareDb = async ()=>{
       return false;
     }
     return true;
-  });
+  },relativePath);
   var outputPath = await waitPrompt("In which path do you want to store the migration script?", (val) => {
     if(FileRW.isValidFile(val)){
       printError("\tCannot generate script at ");
@@ -76,7 +81,7 @@ const compareDb = async ()=>{
       return false;
     }
     return true;
-  });
+  },relativePath);
   var migrationName = await getMigrationName();
   await Actions.doCompareDb(referredDir, outputPath, migrationName);
   await chooseMainAction();
@@ -90,7 +95,7 @@ const migrateDb = async ()=>{
       return false;
     }
     return true;
-  });
+  },relativePath);
   await Actions.doMigrateDb(path);
   await chooseMainAction();
 }
@@ -118,7 +123,7 @@ const compareLocal = async function(){
       return false;
     }
     return true;
-  });
+  },relativePath);
   var oldDir = await waitPrompt("In which directory is the old version?",(val) => {
     if(!FileRW.isValidDirectory(val)){
       printError("\tStructure directory (old models) at location");
@@ -126,7 +131,7 @@ const compareLocal = async function(){
       return false;
     }
     return true;
-  });
+  },relativePath);
   var outputPath = await waitPrompt("In which path do you want to store the migration script?", (val) => {
     if(FileRW.isValidFile(val)){
       printError("\tCannot generate script at ");
@@ -134,7 +139,7 @@ const compareLocal = async function(){
       return false;
     }
     return true;
-  });
+  },relativePath);
   var migrationName = await getMigrationName();
   await Actions.doCompareLocal(newDir, oldDir, outputPath, migrationName);
   await chooseMainAction(mainOptions);

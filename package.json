@@ -1,8 +1,8 @@
 {
   "name": "sequelize-exodus",
-  "version": "1.0.5",
+  "version": "1.0.7",
   "description": "",
-  "main": "index.js",
+  "main": "lib/sequelize-exodus.js",
   "scripts": {
     "test": "mocha --reporter list",
     "start": "node index.js"

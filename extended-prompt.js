@@ -43,10 +43,13 @@ var promptAsync = function(message){
   });
 }
 
-var waitPrompt = async function(message, validator){
+var waitPrompt = async function(message, validator, preprocessor){
   var isValidAnswer = false;
   while(!isValidAnswer){
     var answer = await promptAsync(message);
+    if(preprocessor){
+      answer = preprocessor(answer);
+    }
     isValidAnswer = validator ? validator(answer) : true;
   }
   return answer;

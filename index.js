@@ -4,8 +4,7 @@ const FileRW = require('./lib/file-rw');
 const program = require('commander-plus');
 var SequelizeExodus = require('./lib/sequelize-exodus');
 const Actions = require('./actions');
-module.exports = SequelizeExodus;
-
+const path = require('path');
 let {
   consoleOpt,
   print,
@@ -17,12 +16,17 @@ let {
 } = require("./extended-prompt");
 
 
+
+
 let {
  mainOptions,
  changeToLoggedInState,
  chooseMainAction
 } = require("./main-options");
 
+function relativePath(str){
+  return path.join(process.cwd(),str);
+}
 
 
 var sequelizeExodus = new SequelizeExodus();
@@ -41,8 +45,6 @@ function addLoginOptions(cmd){
 const addMigrationSettingOptions = function(cmd){
   return cmd
   .option('-o, --output-path <outputPath>', 'output path')
-  .option('--from-version <fromVersion>', 'from version of structure in the databse')
-  .option('--current-version <currentVersion>', 'new version of structure in the directory')
   .option('--migration-name <migrationName>', 'name of this migration');
 
 }
@@ -62,16 +64,18 @@ function extractDbConn(env){
 addLoginOptions(program.command('import'))
   .option('-o, --output-dir <outputDir>', 'output directory')
   .action(async function(env){
-    if(FileRW.isValidDirectory(env.outputDir)){
+    var outputDir = relativePath(env.outputDir);
+
+    if(FileRW.isValidDirectory(outputDir)){
       printError("\tCannot generate directory");
-      printError('\t\t"'+env.outputDir+'"', ". The directory exists.");
+      printError('\t\t"'+outputDir+'"', ". The directory exists.");
       return;
     }
 
     try{
       var conn = extractDbConn(env);
       await Actions.doLoginDb(conn);
-      await Actions.doImportDb(env.outputDir);
+      await Actions.doImportDb(outputDir);
     }catch(e){
       console.log(e);
     }
@@ -82,15 +86,17 @@ addLoginOptions(program.command('migrate'))
   .option('--path <path>', 'migration path')
   .action(async function(env){
     try{
-      if(!FileRW.isValidFile(env.path)){
+      var envPath = relativePath(env.path);
+
+      if(!FileRW.isValidFile(envPath)){
         printError("\tMigration script at location");
-        printError('\t\t"'+env.path+'"', "cannot be found");
+        printError('\t\t"'+envPath+'"', "cannot be found");
         return;
       }
 
       var conn = extractDbConn(env);
       await Actions.doLoginDb(conn);
-      await Actions.doMigrateDb(env.path);
+      await Actions.doMigrateDb(envPath);
     }catch(e){
       console.log(e);
     }
@@ -103,14 +109,17 @@ addMigrationSettingOptions(
   .option('--ref-dir <referredDir>', 'referred directory')
   .action(async function(env){
     try{
-      if(!FileRW.isValidDirectory(env.refDir)){
+      var refDir = relativePath(env.refDir);
+      var outputPath = relativePath(env.outputPath);
+
+      if(!FileRW.isValidDirectory(refDir)){
         printError("\tStructure directory (new models) at location");
-        printError('\t\t"'+env.refDir+'"', "does not exist");
+        printError('\t\t"'+refDir+'"', "does not exist");
         isBadParameter = true;
       }
-      if(FileRW.isValidFile(env.outputPath)){
+      if(FileRW.isValidFile(outputPath)){
         printError("\tCannot generate script at ");
-        printError('\t\t"'+env.outputPath+'"', ". There is an existing file");
+        printError('\t\t"'+outputPath+'"', ". There is an existing file");
         isBadParameter = true;
       }
       if(isBadParameter){
@@ -119,48 +128,42 @@ addMigrationSettingOptions(
 
       var conn = extractDbConn(env);
       await Actions.doLoginDb(conn);
-      await Actions.doCompareDb(env.refDir, env.outputPath, {
-        fromVersion: env.fromVersion,
-        currentVersion:env.currentVersion,
-        migrationName:env.migrationName
-      });
+      await Actions.doCompareDb(refDir, outputPath, env.migrationName);
     }catch(e){
       console.log(e);
     }
     process.exit();
   });
 
+
 addMigrationSettingOptions(program.command('compare-local'))
-  .option('-o, --output-path <outputPath>', 'output path')
   .option('--old-dir <oldDir>', 'directory of old structure')
   .option('--new-dir <newDir>', 'directory of new structure')
   .action(async function(env){
     try{
       var isBadParameter = false;
-      if(!FileRW.isValidDirectory(env.newDir)){
+      var newDir = relativePath(env.newDir);
+      var oldDir = relativePath(env.oldDir);
+      var outputPath = relativePath(env.outputPath);
+      if(!FileRW.isValidDirectory(newDir)){
         printError("\tStructure directory (new models) at location");
-        printError('\t\t"'+env.newDir+'"', "does not exist");
+        printError('\t\t"'+newDir+'"', "does not exist");
         isBadParameter = true;
       }
-      if(!FileRW.isValidDirectory(env.oldDir)){
+      if(!FileRW.isValidDirectory(oldDir)){
         printError("\tStructure directory (old models) at location");
-        printError('\t\t"'+env.oldDir+'"', "does not exist");
+        printError('\t\t"'+oldDir+'"', "does not exist");
         isBadParameter = true;
       }
-      if(FileRW.isValidFile(env.outputPath)){
+      if(FileRW.isValidFile(outputPath)){
         printError("\tCannot generate script at ");
-        printError('\t\t"'+env.outputPath+'"', ". There is an existing file");
+        printError('\t\t"'+outputPath+'"', ". There is an existing file");
         isBadParameter = true;
       }
       if(isBadParameter){
         return;
       }
-
-      await Actions.doCompareLocal(env.newDir, env.oldDir,  env.outputPath, {
-        fromVersion: env.fromVersion,
-        currentVersion:env.currentVersion,
-        migrationName:env.migrationName
-      });
+      await Actions.doCompareLocal(newDir, oldDir,  outputPath, env.migrationName);
     }catch(e){
       console.log(e);
     }
