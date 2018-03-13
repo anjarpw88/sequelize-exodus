@@ -1,6 +1,6 @@
 {
   "name": "sequelize-exodus",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -10,7 +10,8 @@
   "author": "ANJAR PUJI WICAKSONO",
   "license": "MIT",
   "bin": {
-    "seqxodus": "./index.js"
+    "seqxodus": "./index.js",
+    "sequelize-exodus": "./index.js"
   },
   "dependencies": {
     "array-async-tools": "^1.0.1",
